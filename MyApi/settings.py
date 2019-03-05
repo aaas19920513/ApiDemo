@@ -25,7 +25,7 @@ SECRET_KEY = '@hc94b=(9r8tjq^eo313hhvh9xsngvdllxitk9ruc4ka+3$6@c'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['127.0.0.1']
 
 
 # Application definition
@@ -40,7 +40,7 @@ INSTALLED_APPS = [
     'users',
     'rest_framework',
     'django_filters',
-
+    'runner',
 ]
 
 AUTH_USER_MODEL = 'users.UserProfile'
@@ -149,17 +149,21 @@ STATIC_URL = '/static/'
 #     'JWT_AUTH_HEADER_PREFIX': 'JWT',
 # }
 REST_FRAMEWORK = {
-     'DEFAULT_FILTER_BACKENDS': (
-         'django_filters.rest_framework.DjangoFilterBackend',
-     ),
-     # 全局认证
-     'DEFAULT_AUTHENTICATION_CLASSES': (
+    'DEFAULT_FILTER_BACKENDS': (
+        'django_filters.rest_framework.DjangoFilterBackend',
+    ),
+    # 全局认证
+    'DEFAULT_AUTHENTICATION_CLASSES': (
         "users.utils.myauth.Authen"
         "tication",
-     ),
-     'DEFAULT_PARSER_CLASSES': (
+    ),
+    # 解析器
+    'DEFAULT_PARSER_CLASSES': (
         'rest_framework.parsers.JSONParser',
         'rest_framework.parsers.FormParser',
         'rest_framework.parsers.MultiPartParser',
      ),
+    # 分页器
+    # 'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
+    # 'PAGE_SIZE': 10
  }

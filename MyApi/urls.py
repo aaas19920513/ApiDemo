@@ -18,15 +18,22 @@ from django.urls import path, include
 from rest_framework import routers
 from users import views
 from rest_framework_jwt.views import obtain_jwt_token
+from runner import views as runner_views
 
-
+# 删除尾部斜杠 trailing_slash=False
 router = routers.DefaultRouter()
-# router.register(r'register', views.RegisterViewSet, base_name='注册')
-# router.register(r'test', views.BatchLoadView, base_name='测试')
+# router.register(r'register', views.RegisterViewSet, base_name='register')
+# router.register(r'test', views.BatchLoadView, base_name='test')
+
+# router.register('project', runner_views.ProjectView, base_name='project')
+router.register('module', runner_views.ModuleView, base_name='module')
+router.register('case', runner_views.CaseView, base_name='case')
+router.register('step', runner_views.StepView, base_name='step')
 
 urlpatterns = [
 
-    path('api/user/', include('users.urls')),
+    path('api/', include('users.urls')),
+    path('api/', include('runner.urls')),
     path('admin/', admin.site.urls),
     #jwt的token认证
     # path('login/', obtain_jwt_token),

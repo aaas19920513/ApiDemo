@@ -34,4 +34,3 @@ class UserRegSerializer(serializers.HyperlinkedModelSerializer):
         model = UserInfo
         fields = ("username", "password", 'type')
 
-

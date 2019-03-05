@@ -40,6 +40,7 @@ class RegisterView(APIView):
 
 
 class LoginView(APIView):
+
     authentication_classes = []
 
     def post(self, request):
@@ -64,5 +65,4 @@ class OrderView(APIView):
     authentication_classes = [Authentication]
 
     def get(self,request):
-
         return Response('test')

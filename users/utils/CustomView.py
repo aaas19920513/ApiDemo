@@ -8,10 +8,11 @@ from rest_framework import viewsets
 from users.utils.response import JsonResponse
 from rest_framework import filters
 from django_filters import rest_framework
+from users.utils import MyPaginatiion
 
 
 class CustomViewBase(viewsets.ModelViewSet):
-    # pagination_class = LargeResultsSetPagination
+    pagination_class = MyPaginatiion.CustomPagination
     # filter_class = ServerFilter
     queryset = ''
     serializer_class = ''
@@ -25,7 +26,7 @@ class CustomViewBase(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
-        return JsonResponse(data=serializer.data, msg="success", code=201, status=status.HTTP_201_CREATED,
+        return JsonResponse(data=serializer.data, msg="success", code=2001, status=status.HTTP_201_CREATED,
                             headers=headers)
 
     def list(self, request, *args, **kwargs):
@@ -36,12 +37,12 @@ class CustomViewBase(viewsets.ModelViewSet):
             return self.get_paginated_response(serializer.data)
 
         serializer = self.get_serializer(queryset, many=True)
-        return JsonResponse(data=serializer.data, code=200, msg="success", status=status.HTTP_200_OK)
+        return JsonResponse(data=serializer.data, code=2001, msg="success", status=status.HTTP_200_OK)
 
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
         serializer = self.get_serializer(instance)
-        return JsonResponse(data=serializer.data, code=200, msg="success", status=status.HTTP_200_OK)
+        return JsonResponse(data=serializer.data, code=2001, msg="success", status=status.HTTP_200_OK)
 
     def update(self, request, *args, **kwargs):
         partial = kwargs.pop('partial', False)
@@ -55,9 +56,37 @@ class CustomViewBase(viewsets.ModelViewSet):
             # forcibly invalidate the prefetch cache on the instance.
             instance._prefetched_objects_cache = {}
 
-        return JsonResponse(data=serializer.data, msg="success", code=200, status=status.HTTP_200_OK)
+        return JsonResponse(data=serializer.data, msg="success", code=2001, status=status.HTTP_206_PARTIAL_CONTENT)
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        print(serializer.data)
         self.perform_destroy(instance)
-        return JsonResponse(data=[], code=204, msg="delete resource success", status=status.HTTP_204_NO_CONTENT)
+        return JsonResponse(data=[], code=2001, msg="delete resource success", status=status.HTTP_200_OK)
+
+
+class CustomViewList(viewsets.ModelViewSet):
+    pagination_class = MyPaginatiion.CustomPagination
+    # filter_class = ServerFilter
+    queryset = ''
+    serializer_class = ''
+    permission_classes = ()
+    filter_fields = ()
+    search_fields = ()
+    filter_backends = (rest_framework.DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter,)
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return JsonResponse(data=serializer.data, code=2001, msg="success", status=status.HTTP_200_OK)
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        return JsonResponse(data=serializer.data, code=2001, msg="success", status=status.HTTP_200_OK)

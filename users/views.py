@@ -2,6 +2,7 @@ from rest_framework.views import APIView
 from users.serializers import UserRegSerializer
 from users import models
 from rest_framework.response import Response
+from django.http import JsonResponse
 from users.utils import MyToken, response_dict
 from users.utils.myauth import Authentication
 from rest_framework.authentication import BaseAuthentication
@@ -62,7 +63,105 @@ class LoginView(APIView):
 
 class OrderView(APIView):
 
+    def get(self, request):
+        a =[
+  {
+    "id": 1,
+    "name": "第一层",
+    "children": [
+      {
+        "name": "第二层"
+      },
+      {
+        "name": "第二层"
+      },
+      {
+        "name": "第二层"
+      }
+    ]
+  },
+  {
+    "id": 1,
+    "name": "第一层",
+    "children": [
+      {
+        "name": "第二层"
+      },
+      {
+        "name": "第二层",
+        "children": [
+          {
+            "name": "第三层"
+          },
+          {
+            "name": "第三层"
+          },
+          {
+            "name": "第三层"
+          }
+        ]
+      },
+      {
+        "name": "第二层",
+        "children": [
+          {
+            "name": "第三层"
+          },
+          {
+            "name": "第三层"
+          },
+          {
+            "name": "第三层",
+            "children": [
+              {
+                "name": "第四层"
+              },
+              {
+                "name": "第四层"
+              },
+              {
+                "name": "第四层",
+                "children": [
+                  {
+                    "name": "第五层"
+                  },
+                  {
+                    "name": "第五层"
+                  },
+                  {
+                    "name": "第五层"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]
+        ret = {
+            'data': a,
+            'code': 2001,
+        }
+        return Response(ret)
+
+
+class UserInfoView(APIView):
     authentication_classes = [Authentication]
 
-    def get(self,request):
-        return Response('test')
+    def get(self, request):
+        try:
+            token = request.query_params['token']
+            token_obj = models.UserToken.objects.filter(token=token).first()
+            if token_obj:
+                user = token_obj.user
+                username = (str(user))
+                ret = {
+                    'code': 2001,
+                    'msg': 'success',
+                    'username': username
+                }
+                return JsonResponse(ret)
+        except:
+            return Response(response_dict.miss_value_dict)

@@ -25,7 +25,7 @@ SECRET_KEY = '@hc94b=(9r8tjq^eo313hhvh9xsngvdllxitk9ruc4ka+3$6@c'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['127.0.0.1']
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'http://localhost:9528']
 
 
 # Application definition
@@ -41,6 +41,11 @@ INSTALLED_APPS = [
     'rest_framework',
     'django_filters',
     'runner',
+    'begin',
+    'import_export',   #导入导出
+    'rest_framework_swagger',# swagger1
+    # 'drf_yasg',         #swagger2
+    'corsheaders',
 ]
 
 AUTH_USER_MODEL = 'users.UserProfile'
@@ -48,12 +53,42 @@ AUTH_USER_MODEL = 'users.UserProfile'
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    # 跨域增加忽略
+    'corsheaders.middleware.CorsMiddleware',
+
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+# 跨域增加忽略
+CORS_ALLOW_CREDENTIALS = True
+CORS_ORIGIN_ALLOW_ALL = True
+CORS_ORIGIN_WHITELIST = ()
+
+CORS_ALLOW_METHODS = (
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
+    'VIEW',
+)
+
+CORS_ALLOW_HEADERS = (
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-token',
+    'x-requested-with',
+)
 
 ROOT_URLCONF = 'MyApi.urls'
 
@@ -149,14 +184,15 @@ STATIC_URL = '/static/'
 #     'JWT_AUTH_HEADER_PREFIX': 'JWT',
 # }
 REST_FRAMEWORK = {
+    # 过滤器
     'DEFAULT_FILTER_BACKENDS': (
         'django_filters.rest_framework.DjangoFilterBackend',
     ),
     # 全局认证
-    'DEFAULT_AUTHENTICATION_CLASSES': (
-        "users.utils.myauth.Authen"
-        "tication",
-    ),
+    # 'DEFAULT_AUTHENTICATION_CLASSES': (
+    #     "users.utils.myauth.Authen"
+    #     "tication",
+    # ),
     # 解析器
     'DEFAULT_PARSER_CLASSES': (
         'rest_framework.parsers.JSONParser',
@@ -167,3 +203,8 @@ REST_FRAMEWORK = {
     # 'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
     # 'PAGE_SIZE': 10
  }
+
+# celery 配置
+# Celery
+
+

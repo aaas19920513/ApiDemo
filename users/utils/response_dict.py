@@ -10,20 +10,20 @@ miss_value_dict = {
 }
 
 success_dict = {
-    'code': '2001',
+    'code': 2001,
     'msg': 'success',
 }
 
 token_dict = {
-    'code': '2001',
+    'code': 2001,
     'msg': 'success',
     'token': None,
     'username': None,
 }
 
 login_failed = {
-    'code': '2001',
-    'msg': '用户名或密码错误',
+    'code': 2002,
+    'msg': '用户名或密码错误,请重试',
 }
 
 register_failed = {

@@ -16,7 +16,7 @@ def get_random_token(username):
     :param username:
     :return:
     """
-    import hashlib,time
+    import hashlib, time
     timestamp = str(time.time()) + SECRET_KEY
     m = hashlib.md5(bytes(username, encoding="utf8"))
     m.update(bytes(timestamp, encoding="utf8"))

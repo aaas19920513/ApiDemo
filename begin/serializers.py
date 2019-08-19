@@ -45,6 +45,15 @@ class StepSerializer(serializers.ModelSerializer):
     # api = ApiSerializer(read_only=True)
 
 
+class CaseCopySerializer(WritableNestedModelSerializer):
+
+    step = StepSerializer(many=True)
+
+    class Meta:
+        model = Case
+        fields = "__all__"
+
+
 class CaseSerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -53,8 +62,10 @@ class CaseSerializer(serializers.ModelSerializer):
 
     # step = StepSerializer(many=True)
     api = serializers.PrimaryKeyRelatedField(queryset=API.objects.all())
-    create_user = serializers.CharField(default=serializers.CurrentUserDefault())
-    update_user = serializers.CharField(default=serializers.CurrentUserDefault())
+    create_user = serializers.CharField()
+    update_user = serializers.CharField()
+    create_time = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S", required=False, read_only=True)
+    update_time = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S", required=False, read_only=True)
 
 
 class VariablesSerializer(serializers.ModelSerializer):

@@ -88,7 +88,7 @@ class Case(models.Model):
     project = models.ManyToManyField(to=Project, null=True, blank=True)
     api = models.ForeignKey(to=API, on_delete=models.CASCADE, related_name='case', null=False, verbose_name='Api')
     name = models.CharField(max_length=128, blank=False, verbose_name='用例名称')
-    create_user = models.CharField(max_length=32, verbose_name='创建人', auto_created=True)
+    create_user = models.CharField(max_length=32, verbose_name='创建人',)
     update_user = models.CharField(max_length=32,  verbose_name='修改人', )
     runFlag = models.IntegerField(choices=run_flag, verbose_name='是否运行')
     create_time = models.DateTimeField(verbose_name='创建时间', auto_now_add=True)
@@ -120,9 +120,9 @@ class Step(models.Model):
     url = models.CharField(max_length=256, blank=False, verbose_name='请求url')
     method = models.CharField(max_length=20, blank=False, null=False)
     body = models.TextField(blank=False, verbose_name='请求参数')
-    bodyType = models.CharField('主体类型', null=False, max_length=5)
+    bodyType = models.CharField('主体类型', null=False, max_length=10)
     headers = models.TextField('请求头', null=False)
-    # sequence = models.IntegerField(blank=False, verbose_name='步骤顺序')
+    sequence = models.IntegerField(blank=False, verbose_name='步骤顺序')
     # step_info = models.TextField(verbose_name='配置信息')
     variables = models.TextField(verbose_name='变量', blank=True)
     extract = models.TextField(verbose_name='提取变量表达式', blank=True)
@@ -135,6 +135,7 @@ class Step(models.Model):
         verbose_name = "步骤表"
         verbose_name_plural = verbose_name
         # db_table = "Step"
+        ordering = ['sequence']
 
     def __str__(self):
         return self.name
@@ -189,31 +190,6 @@ class Classify(MPTTModel):
     def __str__(self):
         return self.name
 
+#
+# class Report(models.Model):
 
-# class Interface(models.Model):
-#     """
-#     API信息表
-#     """
-#     protocol_type = (
-#         (1, "http"),
-#         (2, "https"),
-#         (3, "other"),
-#     )
-#
-#     class Meta:
-#         verbose_name = "interface表"
-#         verbose_name_plural = verbose_name
-#         ordering = ['id']
-#         # db_table = "API"
-#     category = models.ForeignKey(to=Category, blank=False, on_delete=models.CASCADE, related_name='interface', null=False,
-#                                  verbose_name="归属分类")
-#     name = models.CharField("接口名称", null=False, max_length=100)
-#     body = models.TextField("主体信息", null=False)
-#     url = models.CharField("请求地址", null=False, max_length=200)
-#     method = models.CharField("请求方式", null=False, max_length=10)
-#     protocol = models.IntegerField()
-#     test = models.ForeignKey(to=Category, blank=True, on_delete=models.CASCADE, related_name='children', null=False,
-#                              verbose_name='需与category一致', default=category)
-#
-#     def __str__(self):
-#         return self.name

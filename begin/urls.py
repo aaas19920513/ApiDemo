@@ -6,15 +6,12 @@
 
 from django.urls import path
 from begin import views
-from .views1 import api
+from .views1 import teststep, case
 
 
 urlpatterns = [
-    path('case/<int:pk>/', views.RunSingleTestCase.as_view({"get": 'single'})),
-    # path('interface/<int:pk>/', views.RunSingleApi.as_view({"get": 'single'})),
-    path('run/api/', views.run_api),
-    path('run/case/', views.run_case),
-    path('interface/', api.ApiViewSet.as_view({"get": 'list', "post": 'add', "patch": 'update'})),
+    path('step/copy/<int:pk>/', teststep.StepCopyViewSet.as_view({"post": 'copy'})),
+    path('case/copy/<int:pk>/', case.CaseCopyViewSet.as_view({"post": 'copy'})),
+    path('run/case', views.RunCaseByBodyView.as_view()),
     path('run/case_id_list/', views.run_case_by_id),
-    path('bbbb', views.test),
 ]

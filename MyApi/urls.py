@@ -28,7 +28,7 @@ from rest_framework_swagger.renderers import SwaggerUIRenderer, OpenAPIRenderer
 schema_view = get_schema_view(title='API', renderer_classes=[SwaggerUIRenderer, OpenAPIRenderer])
 
 # swagger2
-# from rest_framework import permissions
+from rest_framework import permissions
 # from drf_yasg.views import get_schema_view
 # from drf_yasg import openapi
 

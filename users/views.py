@@ -7,6 +7,7 @@ from users.utils import MyToken, response_dict
 from users.utils.myauth import Authentication
 from rest_framework.authentication import BaseAuthentication
 import hashlib
+import random
 
 
 # 加点盐
@@ -59,92 +60,6 @@ class LoginView(APIView):
             return Response(response_dict.token_dict)
         else:
             return Response(response_dict.login_failed)
-
-
-class OrderView(APIView):
-
-    def get(self, request):
-        a =[
-  {
-    "id": 1,
-    "name": "第一层",
-    "children": [
-      {
-        "name": "第二层"
-      },
-      {
-        "name": "第二层"
-      },
-      {
-        "name": "第二层"
-      }
-    ]
-  },
-  {
-    "id": 1,
-    "name": "第一层",
-    "children": [
-      {
-        "name": "第二层"
-      },
-      {
-        "name": "第二层",
-        "children": [
-          {
-            "name": "第三层"
-          },
-          {
-            "name": "第三层"
-          },
-          {
-            "name": "第三层"
-          }
-        ]
-      },
-      {
-        "name": "第二层",
-        "children": [
-          {
-            "name": "第三层"
-          },
-          {
-            "name": "第三层"
-          },
-          {
-            "name": "第三层",
-            "children": [
-              {
-                "name": "第四层"
-              },
-              {
-                "name": "第四层"
-              },
-              {
-                "name": "第四层",
-                "children": [
-                  {
-                    "name": "第五层"
-                  },
-                  {
-                    "name": "第五层"
-                  },
-                  {
-                    "name": "第五层"
-                  }
-                ]
-              }
-            ]
-          }
-        ]
-      }
-    ]
-  }
-]
-        ret = {
-            'data': a,
-            'code': 2001,
-        }
-        return Response(ret)
 
 
 class UserInfoView(APIView):

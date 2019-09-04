@@ -4,9 +4,7 @@
 # @File    : category.py
 
 from begin import serializers
-from rest_framework.viewsets import GenericViewSet, ModelViewSet, mixins
 from begin import models
-from users.utils.CustomView import CustomViewBase, CustomViewList
 from rest_framework import status
 from rest_framework import viewsets
 from users.utils.response import JsonResponse
@@ -36,10 +34,11 @@ def build_category_add_api(category_list):
         pass
 
 
-def build_api_selector(category_list):
+def build_selector(category_list, celector):
     """
-    构建Api级联选择器数据
+    构建选择器
     :param category_list:
+    :param celector: 选择器种类 ，  such as : api ,  case
     :return:
     """
     try:
@@ -53,14 +52,14 @@ def build_api_selector(category_list):
                         cates_three = cate_two['children']
                         for cate_three in cates_three:
                             cate_three['value'] = cate_three.pop('id')
-                            if len(cate_three['api']) >0:
-                                cate_three['children'] = cate_three.pop('api')
+                            if len(cate_three[celector]) >0:
+                                cate_three['children'] = cate_three.pop(celector)
                                 api_list = cate_three['children']
                                 for api in api_list:
                                     api['label'] = api.pop('name')
                                     api['value'] = api.pop('id')
                             else:
-                                cate_three.pop('api')
+                                cate_three.pop(celector)
                     else:
                         cate_two.pop('children')
             else:
@@ -70,16 +69,11 @@ def build_api_selector(category_list):
         pass
 
 
-class CategoryViewSet(CustomViewBase):
-    queryset = models.Category.objects.all()
-    serializer_class = serializers.CategorySerializer
-
-
-class CategoryViewSet2(viewsets.ModelViewSet):
+class CategoryViewSet(viewsets.ModelViewSet):
     pagination_class = MyPaginatiion.CustomPagination
     # filter_class = ServerFilter
     queryset = models.Category.objects.filter(category_type=1)
-    serializer_class = serializers.CategorySerializer
+    serializer_class = serializers.CategoryApiSerializer
     permission_classes = ()
     filter_fields =()
     search_fields = ('name', 'category', 'id')
@@ -105,12 +99,12 @@ class CategoryViewSet2(viewsets.ModelViewSet):
 
 class ApiCategoryViewSet(viewsets.ModelViewSet):
     """
-    该视图是给前端的API级联选择器的
+    API选择器
     """
     pagination_class = MyPaginatiion.CustomPagination
     # filter_class = ServerFilter
     queryset = models.Category.objects.filter(category_type=1)
-    serializer_class = serializers.CategorySerializer
+    serializer_class = serializers.CategoryApiSerializer
     permission_classes = ()
     filter_fields =()
     search_fields = ('name', 'category', 'id')
@@ -125,7 +119,38 @@ class ApiCategoryViewSet(viewsets.ModelViewSet):
 
         serializer = self.get_serializer(queryset, many=True)
         # 将api构建成category
-        data = build_api_selector(serializer.data)
+        data = build_selector(serializer.data, 'api')
+        return JsonResponse(data=data, code=2001, msg="success", status=status.HTTP_200_OK)
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        return JsonResponse(data=serializer.data, code=2001, msg="success", status=status.HTTP_200_OK)
+
+
+class CaseCategoryViewSet(viewsets.ModelViewSet):
+    """
+    case选择器
+    """
+    pagination_class = MyPaginatiion.CustomPagination
+    # filter_class = ServerFilter
+    queryset = models.Category.objects.filter(category_type=1)
+    serializer_class = serializers.CategoryCaseSerializer
+    permission_classes = ()
+    filter_fields =()
+    search_fields = ('name', 'category', 'id')
+    filter_backends = (rest_framework.DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter,)
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        # 将case构建成category
+        data = build_selector(serializer.data, 'case')
         return JsonResponse(data=data, code=2001, msg="success", status=status.HTTP_200_OK)
 
     def retrieve(self, request, *args, **kwargs):

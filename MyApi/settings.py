@@ -14,6 +14,7 @@ import os
 import datetime
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+from users.diy_midder import Row1
 
 
 # Quick-start development settings - unsuitable for production
@@ -21,6 +22,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = '@hc94b=(9r8tjq^eo313hhvh9xsngvdllxitk9ruc4ka+3$6@c'
+SALT = '@hc94b=(9r8tjq^eo313hhvh9xsngvdllxi5FJFSDF1314QF'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -31,6 +33,7 @@ ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'http://localhost:9528']
 # Application definition
 
 INSTALLED_APPS = [
+    # 'simpleui',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -42,10 +45,12 @@ INSTALLED_APPS = [
     'django_filters',
     'runner',
     'begin',
-    'import_export',   #导入导出
-    'rest_framework_swagger',# swagger1
+    'import_export',   # 导入导出
+    'django_apscheduler',
+    # 'rest_framework_swagger',  # swagger1
     # 'drf_yasg',         #swagger2
     'corsheaders',
+    'tasks'
 ]
 
 AUTH_USER_MODEL = 'users.UserProfile'
@@ -57,10 +62,11 @@ MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
 
     'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
+    # 'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+
 ]
 
 # 跨域增加忽略
@@ -107,6 +113,7 @@ TEMPLATES = [
         },
     },
 ]
+
 
 WSGI_APPLICATION = 'MyApi.wsgi.application'
 
@@ -159,6 +166,10 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.1/howto/static-files/
 
 STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+STATICFILES_DIRS = [
+os.path.join(BASE_DIR, "templates"),
+]
 
 # REST_FRAMEWORK = {
 #     'DEFAULT_PERMISSION_CLASSES': (
@@ -179,10 +190,12 @@ STATIC_URL = '/static/'
 #
 # }
 #
+ # JWT 配置
 # JWT_AUTH = {
 #     'JWT_EXPIRATION_DELTA': datetime.timedelta(seconds=1800),
 #     'JWT_AUTH_HEADER_PREFIX': 'JWT',
 # }
+
 REST_FRAMEWORK = {
     # 过滤器
     'DEFAULT_FILTER_BACKENDS': (
@@ -190,8 +203,10 @@ REST_FRAMEWORK = {
     ),
     # 全局认证
     # 'DEFAULT_AUTHENTICATION_CLASSES': (
-    #     "users.utils.myauth.Authen"
-    #     "tication",
+    #     # "users.utils.myauth.Authentication",
+    #     'rest_framework.authentication.BasicAuthentication',
+    #     'rest_framework.authentication.SessionAuthentication',
+    #     "rest_framework_jwt.authentication.JSONWebTokenAuthentication",
     # ),
     # 解析器
     'DEFAULT_PARSER_CLASSES': (
@@ -208,3 +223,120 @@ REST_FRAMEWORK = {
 # Celery
 
 
+# swagger 配置项
+# SWAGGER_SETTINGS = {
+#     # 基础样式
+#     'SECURITY_DEFINITIONS': {
+#         "basic":{
+#             'type': 'basic'
+#         }
+#     },
+#     # 如果需要登录才能够查看接口文档, 登录的链接使用restframework自带的.
+#     'LOGIN_URL': 'rest_framework:login',
+#     'LOGOUT_URL': 'rest_framework:logout',
+#     # 'DOC_EXPANSION': None,
+#     # 'SHOW_REQUEST_HEADERS':True,
+#     # 'USE_SESSION_AUTH': True,
+#     # 'DOC_EXPANSION': 'list',
+#     # 接口文档中方法列表以首字母升序排列
+#     'APIS_SORTER': 'alpha',
+#     # 如果支持json提交, 则接口文档中包含json输入框
+#     'JSON_EDITOR': True,
+#     # 方法列表字母排序
+#     'OPERATIONS_SORTER': 'alpha',
+#     'VALIDATOR_URL': None,
+# }
+
+# 邮件配置
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.163.com'
+EMAIL_PORT = 25
+EMAIL_HOST_USER = '*******'
+EMAIL_HOST_PASSWORD = '***********'
+CONFIRM_DAYS = 7
+
+# TASKS
+
+TASKS_DICT = {'邮件': 'tasks_run_suite'}
+
+
+BASE_LOG_DIR = os.path.join(BASE_DIR, "log")
+LOGGING = {
+    'version': 1,  # 保留字
+    'disable_existing_loggers': False,  # 禁用已经存在的logger实例
+    # 日志文件的格式
+    'formatters': {
+        # 详细的日志格式
+        'standard': {
+            'format': '[%(asctime)s][%(threadName)s:%(thread)d][task_id:%(name)s][%(filename)s:%(lineno)d]'
+                      '[%(levelname)s][%(message)s]'
+        },
+        # 简单的日志格式
+        'simple': {
+            'format': '[%(levelname)s][%(asctime)s][%(filename)s:%(lineno)d]%(message)s'
+        },
+        # 定义一个特殊的日志格式
+        'collect': {
+            'format': '%(message)s'
+        }
+    },
+    # 过滤器
+    'filters': {
+        'require_debug_true': {
+            '()': 'django.utils.log.RequireDebugTrue',
+        },
+    },
+    # 处理器
+    'handlers': {
+        # 在终端打印
+        'console': {
+            'level': 'DEBUG',
+            'filters': ['require_debug_true'],  # 只有在Django debug为True时才在屏幕打印日志
+            'class': 'logging.StreamHandler',  #
+            'formatter': 'simple'
+        },
+        # 默认的
+        'default': {
+            'level': 'INFO',
+            'class': 'logging.handlers.RotatingFileHandler',  # 保存到文件，自动切
+            'filename': os.path.join(BASE_LOG_DIR, "info.log"),  # 日志文件
+            'maxBytes': 1024 * 1024 * 50,  # 日志大小 50M
+            'backupCount': 3,  # 最多备份几个
+            'formatter': 'standard',
+            'encoding': 'utf-8',
+        },
+        # 专门用来记错误日志
+        'error': {
+            'level': 'ERROR',
+            'class': 'logging.handlers.RotatingFileHandler',  # 保存到文件，自动切
+            'filename': os.path.join(BASE_LOG_DIR, "error.log"),  # 日志文件
+            'maxBytes': 1024 * 1024 * 50,  # 日志大小 50M
+            'backupCount': 5,
+            'formatter': 'standard',
+            'encoding': 'utf-8',
+        },
+        # 专门定义一个收集特定信息的日志
+        'tasks': {
+            'level': 'INFO',
+            'class': 'logging.handlers.RotatingFileHandler',  # 保存到文件，自动切
+            'filename': os.path.join(BASE_LOG_DIR, "tasks.log"),
+            'maxBytes': 1024 * 1024 * 50,  # 日志大小 50M
+            'backupCount': 5,
+            'formatter': 'standard',
+            'encoding': "utf-8"
+        }
+    },
+    'loggers': {
+       # 默认的logger应用如下配置
+        '': {
+            'handlers': ['default', 'console', 'error'],  # 上线之后可以把'console'移除
+            'level': 'DEBUG',
+            'propagate': True,  # 向不向更高级别的logger传递
+        },
+        # 名为 'tasks'的logger单独处理
+        'tasks': {
+            'handlers': ['tasks'],
+            'level': 'INFO',
+        }
+    },
+}

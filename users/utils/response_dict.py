@@ -5,7 +5,7 @@
 
 
 miss_value_dict = {
-    'code': '2004',
+    'code': 2001,
     'msg': '请求数据非法',
 }
 
@@ -27,7 +27,7 @@ login_failed = {
 }
 
 register_failed = {
-    'code': '2001',
+    'code': 2001,
     'msg': '注册失败，用户名已存在',
 }
 

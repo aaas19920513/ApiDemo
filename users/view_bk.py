@@ -18,7 +18,7 @@ from rest_framework.mixins import CreateModelMixin
 User = get_user_model()
 
 
-class UserViewset(CreateModelMixin, mixins.UpdateModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
+class UserViewSet(CreateModelMixin, mixins.UpdateModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
     """
     用户
     """
@@ -52,7 +52,6 @@ class UserViewset(CreateModelMixin, mixins.UpdateModelMixin, mixins.RetrieveMode
         print(payload)
         re_dict["token"] = jwt_encode_handler(payload)
         re_dict["name"] = user.name if user.name else user.username
-
         headers = self.get_success_headers(serializer.data)
         return Response(re_dict, status=status.HTTP_201_CREATED, headers=headers)
 

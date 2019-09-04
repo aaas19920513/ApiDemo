@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # @Time    : 2019/2/28 22:15
 # @Author  : tuihou
-# @File    : myauth.py
+# @File    : MyAuth.py
 
 from rest_framework.authentication import BaseAuthentication
 from rest_framework import exceptions

@@ -1,4 +1,5 @@
 from django.db import models
+from django_apscheduler.models import DjangoJob, DjangoJobExecution
 
 
 class Category(models.Model):
@@ -26,26 +27,6 @@ class Category(models.Model):
 
     def __str__(self):
         return self.label
-
-
-class Project(models.Model):
-
-    category = models.ForeignKey(to=Category, on_delete=models.CASCADE, related_name='project', null=False,
-                                 verbose_name="项目类目",  default=1)
-    name = models.CharField(max_length=128, blank=False, unique=True, verbose_name='项目名称')
-    developer = models.CharField(max_length=256, verbose_name='开发人员')
-    tester = models.CharField(max_length=256, verbose_name='测试人员')
-    description = models.CharField(max_length=256, verbose_name='项目介绍')
-    create_time = models.DateTimeField(verbose_name='创建时间', auto_now_add=True)
-    update_time = models.DateTimeField(verbose_name='更新时间', auto_now=True)
-
-    class Meta:
-        verbose_name = "项目信息表"
-        verbose_name_plural = verbose_name
-        # db_table = "Project"
-
-    def __str__(self):
-        return self.name
 
 
 class API(models.Model):
@@ -85,7 +66,6 @@ class Case(models.Model):
 
     category = models.ForeignKey(to=Category, on_delete=models.CASCADE, related_name='case', null=False,
                                  verbose_name="case类目",)
-    project = models.ManyToManyField(to=Project, null=True, blank=True)
     api = models.ForeignKey(to=API, on_delete=models.CASCADE, related_name='case', null=False, verbose_name='Api')
     name = models.CharField(max_length=128, blank=False, verbose_name='用例名称')
     create_user = models.CharField(max_length=32, verbose_name='创建人',)
@@ -98,6 +78,43 @@ class Case(models.Model):
         verbose_name = "用例信息表"
         verbose_name_plural = verbose_name
         # db_table = "Case"
+
+    def __str__(self):
+        return self.name
+
+
+class Project(models.Model):
+
+    name = models.CharField(max_length=128, blank=False, unique=True, verbose_name='项目名称')
+    create_user = models.CharField(verbose_name='创建人', max_length=12)
+    case = models.ManyToManyField(to=Case, null=True, blank=True)
+    description = models.CharField(max_length=256, verbose_name='项目介绍')
+    create_time = models.DateTimeField(verbose_name='创建时间', auto_now_add=True)
+    update_time = models.DateTimeField(verbose_name='更新时间', auto_now=True)
+
+    class Meta:
+        verbose_name = "项目信息表"
+        verbose_name_plural = verbose_name
+        # db_table = "Project"
+
+    def __str__(self):
+        return self.name
+
+
+class TestSuite(models.Model):
+
+    name = models.CharField(max_length=128, blank=False, unique=True, verbose_name='项目名称')
+    member = models.CharField(verbose_name='项目成员', max_length=1028)
+    create_user = models.CharField(verbose_name='创建人', max_length=32)
+    case = models.ManyToManyField(to=Case, null=True, blank=True, related_name='suite')
+    description = models.CharField(max_length=256, verbose_name='说明')
+    create_time = models.DateTimeField(verbose_name='创建时间', auto_now_add=True)
+    update_time = models.DateTimeField(verbose_name='更新时间', auto_now=True)
+
+    class Meta:
+        verbose_name = "TestSuite"
+        verbose_name_plural = verbose_name
+        # db_table = "Project"
 
     def __str__(self):
         return self.name
@@ -154,7 +171,6 @@ class Config(models.Model):
     name = models.CharField("环境名称", null=False, max_length=100)
     body = models.TextField("主体信息", null=False)
     base_url = models.CharField("请求地址", null=False, max_length=100)
-    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='config')
 
     def __str__(self):
         return self.name
@@ -164,7 +180,6 @@ class Variables(models.Model):
 
     key = models.CharField(null=False, max_length=100, unique=True)
     value = models.CharField(null=False, max_length=1024)
-    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='variables')
 
     class Meta:
         verbose_name = "全局变量表"
@@ -190,6 +205,66 @@ class Classify(MPTTModel):
     def __str__(self):
         return self.name
 
-#
-# class Report(models.Model):
 
+class Report(models.Model):
+    status_type = (
+        (0, "执行中"),
+        (1, "已完成"),
+    )
+    suite = models.ForeignKey(to=TestSuite, verbose_name='testSuite', related_name='report', on_delete=models.CASCADE)
+    total = models.IntegerField(verbose_name='case总数', default=0)
+    successes = models.IntegerField(verbose_name='case通过数', default=0)
+    failures = models.IntegerField(verbose_name='case失败数', default=0)
+    # skipped = models.IntegerField(verbose_name='case跳过数', default=0)
+    # error = models.IntegerField(verbose_name='case错误数', default=0)
+    start = models.CharField(verbose_name='开始测试时间', max_length=20)
+    creat_time = models.DateTimeField(auto_now_add=True, verbose_name='报告生成时间')
+    duration = models.CharField("耗时", max_length=64, default="0")
+    env = models.CharField(max_length=128, verbose_name='运行环境')
+    platform = models.CharField(max_length=64, verbose_name='系统')
+
+    def __str__(self):
+        return self.name
+
+
+class ReportCase(models.Model):
+
+    status_type = (
+        (0, "fail"),
+        (1, "success"),
+    )
+    report = models.ForeignKey(to=Report, verbose_name='report', on_delete=models.CASCADE, related_name='caseReport')
+    name = models.CharField(verbose_name='用例名', max_length=128)
+    result = models.SmallIntegerField(choices=status_type, verbose_name='结果')
+    total = models.IntegerField(verbose_name='步骤总数')
+    successes = models.IntegerField(verbose_name='通过步骤数')
+    failures = models.IntegerField(verbose_name='失败步骤数')
+    errors = models.IntegerField(verbose_name='错误步骤数')
+    skipped = models.IntegerField(verbose_name='跳过步骤数')
+    expectedFailures = models.IntegerField(verbose_name='期望失败数')
+    unexpectedSuccesses = models.IntegerField(verbose_name='不希望成功数')
+    start_time = models.CharField(max_length=20, verbose_name='开始时间')
+    duration = models.CharField(verbose_name='耗时', max_length=20, default=0)
+
+    def __str__(self):
+        return self.name
+
+
+class ReportDetail(models.Model):
+    status_type = (
+        (0, "error"),
+        (1, "success"),
+        (2, "skip"),
+        (3, "fail")
+    )
+    reportCase = models.ForeignKey(to=ReportCase, on_delete=models.CASCADE, verbose_name='caseResult', related_name='detail')
+    result = models.SmallIntegerField(choices=status_type, default=1, verbose_name="运行结果")
+    duration = models.CharField(verbose_name='耗时', max_length=20)
+    name = models.CharField(verbose_name='步骤名', max_length=128)
+    content_size = models.IntegerField(verbose_name="content长度")
+    request = models.TextField(verbose_name='请求')
+    response = models.TextField(verbose_name="响应")
+    validate = models.TextField(verbose_name='断言')
+
+    def __str__(self):
+        return self.name

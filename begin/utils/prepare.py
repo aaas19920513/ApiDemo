@@ -73,30 +73,26 @@ def build_case(body, case_name):
     return case_obj
 
 
-def build_case_by_id(list_id):
+def build_case_by_id(case_id):
     """
 
-    :param list_id: [case_id_list]
-    :return: case_list:  [ {case_name:'',  case_steps:[]}, {}]
+    :param case_id: id
+    :return: case: {case_name:'',  case_steps:[]}
     """
 
-    cases_list = []
-    for case_id in list_id:
-        print('case_id:{}'.format(case_id))
-        case_name = models.Case.objects.get(pk=case_id)
-        if not case_name:
-            return []
-        # questset转为dict, 只能是单个对象
-        case_name = model_to_dict(case_name)['name']
-        # case_name = [case_info for case_info in case_name if case_info is not None][0]
-        steps_query = models.Step.objects.filter(case_id=case_id).values("name", "extract", "variables", "validate", "method",
-                                        "body", "url", "headers", "sequence", "bodyType", "times").order_by('sequence')
-        if not steps_query:
-            return []
-        steps = [steps for steps in steps_query]
-        case = build_case(steps, case_name=case_name)
-        cases_list.append(case)
-    return cases_list
+    case_name_query = models.Case.objects.filter(pk=case_id).values('name')
+    # case_name = serializers.serialize('json', models.Case.objects.filter(pk=case_id))
+    if not case_name_query:
+        return []
+    # questset转为dict, 只能是单个对象
+    # case_name = model_to_dict(case_name)['name']
+    case_name = [case_name for case_name in case_name_query][0]
+    steps_query = models.Step.objects.filter(case_id=case_id).values("name", "extract", "variables", "validate", "method",
+                                    "body", "url", "headers", "sequence", "bodyType", "times").order_by('sequence')
+    steps = [steps for steps in steps_query]
+    case = build_case(steps, case_name=case_name)
+
+    return case
 
 
 def parse_validate_from_database(step):
@@ -106,12 +102,12 @@ def parse_validate_from_database(step):
         actual = obj['actual']
         comparator = obj['comparator']
         try:
-            if obj['type'] == 1:
-                expect1 = obj['expect']
-            elif obj['type'] == 2:
+            if obj['type'] == 2:
                 expect1 = int(obj['expect'])
             elif obj['type'] == 3:
                 expect1 = float(obj['expect'])
+            else:
+                expect1 = obj['expect']
             dict1[comparator] = [actual, expect1]
         except ValueError:
             pass

@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 # Register your models here.
-from .models import Project, Step, Case, Variables, Config, Category, API, Classify
+from .models import Project, Step, Case, Variables, Config, Category, API, Classify, TestSuite, Report
 
 
 class ClassifyAdmin(admin.ModelAdmin):
@@ -20,3 +20,5 @@ admin.site.register(Variables)
 admin.site.register(Config)
 admin.site.register(API)
 admin.site.register(Classify, ClassifyAdmin)
+admin.site.register(TestSuite)
+admin.site.register(Report)

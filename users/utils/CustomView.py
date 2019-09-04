@@ -9,7 +9,6 @@ from users.utils.response import JsonResponse
 from rest_framework import filters
 from django_filters import rest_framework
 from users.utils import MyPaginatiion
-from rest_framework import mixins
 
 
 class CustomViewBase(viewsets.ModelViewSet):
@@ -23,10 +22,13 @@ class CustomViewBase(viewsets.ModelViewSet):
     filter_backends = (rest_framework.DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter,)
 
     def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
-        headers = self.get_success_headers(serializer.data)
+        try:
+            serializer = self.get_serializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            self.perform_create(serializer)
+            headers = self.get_success_headers(serializer.data)
+        except:
+            return JsonResponse(status=status.HTTP_404_NOT_FOUND, msg="服务器开小差了")
         return JsonResponse(data=serializer.data, msg="success", code=2001, status=status.HTTP_201_CREATED,
                             headers=headers)
 
@@ -46,25 +48,26 @@ class CustomViewBase(viewsets.ModelViewSet):
         return JsonResponse(data=serializer.data, code=2001, msg="success", status=status.HTTP_200_OK)
 
     def update(self, request, *args, **kwargs):
-        partial = kwargs.pop('partial', False)
-        instance = self.get_object()
-        serializer = self.get_serializer(instance, data=request.data, partial=partial)
-        serializer.is_valid(raise_exception=True)
-        self.perform_update(serializer)
+        try:
+            partial = kwargs.pop('partial', False)
+            instance = self.get_object()
+            serializer = self.get_serializer(instance, data=request.data, partial=partial)
+            serializer.is_valid(raise_exception=True)
+            self.perform_update(serializer)
 
-        if getattr(instance, '_prefetched_objects_cache', None):
-            # If 'prefetch_related' has been applied to a queryset, we need to
-            # forcibly invalidate the prefetch cache on the instance.
-            instance._prefetched_objects_cache = {}
-
+            if getattr(instance, '_prefetched_objects_cache', None):
+                # If 'prefetch_related' has been applied to a queryset, we need to
+                # forcibly invalidate the prefetch cache on the instance.
+                instance._prefetched_objects_cache = {}
+        except:
+            return JsonResponse(status=status.HTTP_404_NOT_FOUND, msg="服务器开小差了")
         return JsonResponse(data=serializer.data, msg="success", code=2001, status=status.HTTP_206_PARTIAL_CONTENT)
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
         serializer = self.get_serializer(instance)
-        print(serializer.data)
         self.perform_destroy(instance)
-        return JsonResponse(data=[], code=2001, msg="delete resource success", status=status.HTTP_200_OK)
+        return JsonResponse(data=[serializer.data], code=2001, msg="delete resource success", status=status.HTTP_200_OK)
 
 
 class CustomViewList(viewsets.ModelViewSet):

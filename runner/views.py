@@ -8,7 +8,7 @@ from runner import models
 from rest_framework.response import Response
 from .utils import responce_dict, tools
 from django.core import exceptions
-from users.utils.myauth import Authentication
+from users.utils.MyAuth import Authentication
 
 
 class ProjectView(viewsets.ModelViewSet):

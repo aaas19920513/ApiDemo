@@ -2,6 +2,7 @@
 # @Time    : 2019/6/15 17:34
 # @Author  : tuihou
 # @File    : Case.py
+from rest_framework.permissions import IsAdminUser,IsAuthenticated
 from begin import serializers
 from rest_framework import viewsets
 from begin import models
@@ -21,8 +22,7 @@ logger = logging.getLogger('case')
 
 
 class CaseViewSet(CustomViewBase):
-
-    authentication_classes = []
+    # permission_classes = [IsAuthenticated]
     pagination_class = MyPaginatiion.CustomPagination
     serializer_class = serializers.CaseSerializer
     queryset = models.Case.objects.all()

@@ -11,6 +11,11 @@ from begin import models, serializers
 from rest_framework.response import Response
 from MyApi import responce_dict
 from begin.filters import ApiFilter
+from rest_framework.decorators import action
+from begin.utils import leading_api
+from users.utils.CustomView import CustomViewBase
+from rest_framework import status
+from users.utils.response import JsonResponse
 
 
 class ApiViewSet(viewsets.GenericViewSet, mixins.CreateModelMixin,
@@ -183,9 +188,6 @@ class ApiViewSet2(viewsets.ModelViewSet):
     filter_class = ApiFilter
     search_fields = ('name', 'category', 'url')
 
-from users.utils.CustomView import CustomViewBase
-from users.utils.MyPaginatiion import CustomPagination
-
 
 class ApiViewSet3(CustomViewBase):
     '''
@@ -212,3 +214,12 @@ class ApiViewSet3(CustomViewBase):
     serializer_class = serializers.ApiSerializer
     filter_class = ApiFilter
     search_fields = ('name', 'category', 'url')
+
+    @action(methods='POST', url_path='leading', detail=False, url_name='leading_api')
+    def leading_api_list(self, request):
+        try:
+            url = request.data['url']
+        except ValueError as E:
+            return JsonResponse(data=[], msg=E, code=4004, status=status.HTTP_400_BAD_REQUEST)
+        leading_api.leading_api_list(url=url)
+        return JsonResponse(code=2001, status=status.HTTP_201_CREATED, msg='导入中')

@@ -10,7 +10,11 @@ from . import views, view_bk
 urlpatterns = [
     path('register', views.RegisterView.as_view(), name='注册'),
     # jwt
-    # path('register2', view_bk.UserViewSet.as_view({'get':'retrieve', 'post': 'create'}), name='注册'),
+    path('register2', view_bk.UserViewSet.as_view({'get':'retrieve', 'post': 'create'}), name='注册'),
     path('login', views.LoginView.as_view(), name='登录'),
-    path('user/info', views.UserInfoView.as_view(),  name='UserInfo')
+    path('user/info', views.UserInfoView.as_view(),  name='UserInfo'),
+    path('signal', views.create_signal),
+    path('file', views.FileView.as_view()),
+    path('file/<int:pk>', views.FileView.as_view()),
+    path('test', views.test),
 ]

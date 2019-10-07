@@ -42,7 +42,9 @@ class API(models.Model):
     category = models.ForeignKey(to=Category, blank=False, on_delete=models.CASCADE, related_name='api', null=False,
                                  verbose_name="Api类目")
     name = models.CharField("接口名称", null=False, max_length=100)
-    body = models.TextField("主体信息", null=False)
+    query_params = models.TextField("query参数", null=True, blank=True)
+    path_params = models.CharField("path参数", max_length=100,null=True, blank=True)
+    body = models.TextField("主体信息", null=True, blank=True)
     url = models.CharField("请求地址", null=False, max_length=200)
     method = models.CharField("请求方式", null=False, max_length=10)
     headers = models.TextField('请求头', null=False)
@@ -137,7 +139,8 @@ class Step(models.Model):
     url = models.CharField(max_length=256, blank=False, verbose_name='请求url')
     method = models.CharField(max_length=20, blank=False, null=False)
     body = models.TextField(blank=False, verbose_name='请求参数')
-    bodyType = models.CharField('主体类型', null=False, max_length=10)
+    query_params = models.TextField("query参数", null=True, blank=True)
+    path_params = models.CharField("path参数", max_length=100, null=True, blank=True)
     headers = models.TextField('请求头', null=False)
     sequence = models.IntegerField(blank=False, verbose_name='步骤顺序')
     # step_info = models.TextField(verbose_name='配置信息')
@@ -268,3 +271,12 @@ class ReportDetail(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class FileModel(models.Model):
+    """
+    文件
+    """
+    name = models.CharField(max_length=255, verbose_name="文件名字")
+    content = models.BinaryField("文件内容", null=False)
+

@@ -14,7 +14,6 @@ import os
 import datetime
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-from users.diy_midder import Row1
 
 
 # Quick-start development settings - unsuitable for production
@@ -43,14 +42,17 @@ INSTALLED_APPS = [
     'users',
     'rest_framework',
     'django_filters',
-    'runner',
     'begin',
-    'import_export',   # 导入导出
+    # 'rest_framework.authtoken',
+    # 'import_export',   # 导入导出
     'django_apscheduler',
     # 'rest_framework_swagger',  # swagger1
     # 'drf_yasg',         #swagger2
     'corsheaders',
-    'tasks'
+    'tasks',
+    'mock',
+    # 'channels',
+    'chat'
 ]
 
 AUTH_USER_MODEL = 'users.UserProfile'
@@ -66,7 +68,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-
+    'users.diy_midder.ApiLoggingMiddleware',
 ]
 
 # 跨域增加忽略
@@ -101,7 +103,7 @@ ROOT_URLCONF = 'MyApi.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'templates')],
+        'DIRS': [os.path.join(BASE_DIR, 'templates\dist')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -159,16 +161,16 @@ USE_I18N = True
 
 USE_L10N = True
 
-USE_TZ = True
+USE_TZ = False
 
-
+TIME_DIFFERENCE = 1800
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.1/howto/static-files/
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 STATICFILES_DIRS = [
-os.path.join(BASE_DIR, "templates"),
+os.path.join(BASE_DIR, "static/dist"),
 ]
 
 # REST_FRAMEWORK = {
@@ -203,10 +205,14 @@ REST_FRAMEWORK = {
     ),
     # 全局认证
     # 'DEFAULT_AUTHENTICATION_CLASSES': (
-    #     # "users.utils.myauth.Authentication",
+    #     "users.utils.MyAuth.Authentication",
     #     'rest_framework.authentication.BasicAuthentication',
     #     'rest_framework.authentication.SessionAuthentication',
     #     "rest_framework_jwt.authentication.JSONWebTokenAuthentication",
+    # ),
+    # 'DEFAULT_PERMISSION_CLASSES': (
+    #     # "users.utils.MyPermission.MyPermission",
+    #     "rest_framework.permissions.IsAuthenticated"
     # ),
     # 解析器
     'DEFAULT_PARSER_CLASSES': (
@@ -259,6 +265,7 @@ CONFIRM_DAYS = 7
 
 TASKS_DICT = {'邮件': 'tasks_run_suite'}
 
+DEFAULT_CALLBACK_REQUEST_TIMEOUT = 3
 
 BASE_LOG_DIR = os.path.join(BASE_DIR, "log")
 LOGGING = {
@@ -337,6 +344,22 @@ LOGGING = {
         'tasks': {
             'handlers': ['tasks'],
             'level': 'INFO',
+        },
+        'mock_api': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': False,
         }
     },
 }
+
+# CHANNEL_LAYERS = {
+#     'default': {
+#         'BACKEND': 'asgi_redis.RedisChannelLayer',
+#         'CONFIG': {
+#             'hosts': [('localhost', 6379)],
+#         },
+#         'ROUTING': 'example_channels.routing.channel_routing',
+#     }
+# }
+# ASGI_APPLICATION = 'MyApi.routing.application'

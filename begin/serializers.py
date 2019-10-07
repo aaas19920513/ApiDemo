@@ -60,7 +60,7 @@ class StepSerializer(serializers.ModelSerializer):
     # api = ApiSerializer(read_only=True)
 
 
-class CaseCopySerializer(WritableNestedModelSerializer):
+class CaseCopySerializer(serializers.ModelSerializer):
 
     """
     case复制序列化

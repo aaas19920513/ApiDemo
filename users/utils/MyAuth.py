@@ -6,10 +6,13 @@
 from rest_framework.authentication import BaseAuthentication
 from rest_framework import exceptions
 from users import models
-from users.utils.response_dict import auth_failed
+from users.utils.response_dict import auth_failed, auth_out_of_date
+import datetime
+import pytz
+from django.conf import settings
 
 
-class Authentication(object):
+class Authentication(BaseAuthentication):
     def authenticate(self, request):
         """
         用户认证，如果验证成功后返回元组： (用户,用户Token)
@@ -34,6 +37,13 @@ class Authentication(object):
         token_obj = models.UserToken.objects.filter(token=token).first()
         if not token_obj:
             raise exceptions.AuthenticationFailed(auth_failed)
+
+        end = datetime.datetime.now()
+        start = token_obj.create_time
+        time_difference = (end - start).seconds
+        print(time_difference)
+        if time_difference > settings.TIME_DIFFERENCE:
+            raise exceptions.AuthenticationFailed(auth_out_of_date)
         return (token_obj.user, token_obj)
 
     def authenticate_header(self, request):

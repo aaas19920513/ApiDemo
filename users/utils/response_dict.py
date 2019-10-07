@@ -32,6 +32,11 @@ register_failed = {
 }
 
 auth_failed = {
-    'code': '2005',
+    'code': 4004,
     'msg': '用户认证失败',
+}
+
+auth_out_of_date = {
+    'code': 2005,
+    'msg': '登录超时，请重新登录',
 }

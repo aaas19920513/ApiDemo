@@ -20,9 +20,14 @@ class UserDetailSerializer(serializers.ModelSerializer):
     用户详情序列化
     """
 
+    days_since_joined = serializers.SerializerMethodField()
+
     class Meta:
         model = UserProfile
-        exclude = ("password",)
+        exclude = ("password", )
+
+    def get_days_since_joined(self, obj):
+        return (now() - obj.date_joined).days
 
 
 class UserRegSerializer(serializers.ModelSerializer):
@@ -48,21 +53,17 @@ class UserRegSerializer(serializers.ModelSerializer):
         },
     )
 
-    days_since_joined = serializers.SerializerMethodField()
     # second_password = serializers.CharField(source='user.confirm_password')
 
     class Meta:
         model = User
-        fields = ("password", "username", "email")
+        fields = ("password", "username", "email",)
         read_only_fields = ("username",)
 
     def validate_password(self, value):
         if len(value) < 6:
             raise serializers.ValidationError('this is test for validated')
         return value
-
-    def get_days_since_joined(self, obj):
-        return (now() - obj.date_joined).days
 
     # def create(self, validated_data):
     #     user = User(

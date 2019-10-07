@@ -87,3 +87,76 @@ class UserViewSet(CustomView.CustomViewBase):
 
     queryset = User.objects.all()
     serializer_class = UserDetailSerializer
+
+
+from django.shortcuts import HttpResponse
+import time
+import django.dispatch
+from django.dispatch import receiver
+
+# Create your views here.
+
+# 定义一个信号
+work_done = django.dispatch.Signal(providing_args=['path', 'time'])
+
+
+def create_signal(request):
+    url_path = request.path
+    print("我已经做完了工作。现在我发送一个信号出去，给那些指定的接收器。")
+
+    # 发送信号，将请求的IP地址和时间一并传递过去
+    work_done.send(create_signal, path=url_path, time=time.strftime("%Y-%m-%d %H:%M:%S"))
+    return HttpResponse("200,ok")
+
+
+@receiver(work_done, sender=create_signal)
+def my_callback(sender, **kwargs):
+    print("我在%s时间收到来自%s的信号，请求url为%s" % (kwargs['time'], sender, kwargs["path"]))
+
+
+
+from django.core.exceptions import ObjectDoesNotExist
+from rest_framework.views import APIView
+from rest_framework.viewsets import GenericViewSet
+from rest_framework.response import Response
+from . import models
+from django.shortcuts import render, get_object_or_404
+class FileView(APIView):
+
+    def post(self, request):
+        """
+        接收文件并保存
+        """
+        file = request.FILES['file']
+
+        if models.FileBinary.objects.filter(name=file.name).first():
+            return Response("test")
+
+        body = {
+            "name": file.name,
+            "body": file.file.read(),
+            "size": 55
+        }
+
+        models.FileBinary.objects.create(**body)
+
+        return Response('testst')
+
+    def get(self, request, **kwargs):
+        pk = kwargs.get('pk',  None)
+        print(kwargs)
+        binfile = get_object_or_404(models.FileBinary, pk=pk)
+        print(binfile.name)
+        resp = HttpResponse(binfile.body, content_type='application/octet-stream')
+        resp['Content-Disposition'] = 'attachment; filename="%s"' % binfile.name
+        return resp
+
+
+from django.views.decorators.cache import cache_page
+import time
+
+
+@cache_page(15)  # 超时时间为15秒
+def test(request):
+    t = time.localtime()
+    return HttpResponse(t)

@@ -37,6 +37,7 @@ def get_func(content):
 
 
 def is_faker_func(content):
+    # todo
     func_name = get_func(content)
     try:
         obj = getattr(Faker(locale='zh_CN'), func_name)
